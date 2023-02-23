@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>SignalR Core - БВ121 - Чат</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+
+        <div id="loginBlock" class="col-3">
+            <input id="userName" type="text" placeholder="Ваше имя"
+                   class="form-control"/>
+            <input id="loginBtn" type="button" value="Вход"
+                   class="btn btn-primary"/>
+
+        </div><br />
+        <div id="header"></div><br />
+
+        <div id="inputForm">
+            <input type="text" id="message" class="form-control"/>
+            <input type="button" id="sendBtn" value="Отправить"
+                   class="btn btn-success"/>
+        </div>
+
+        <div id="chatroom"></div>
+    </div>
+    <script src="js/signalr/dist/browser/signalr.min.js"></script>
+    <script>
+        const hubConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/chat")
+            .build();
+
+        let userName = '';
+
+        hubConnection.on("Send", function (message, userName) {
+            let userNameElem = document.createElement("b");
+            userNameElem.appendChild(document.createTextNode(userName + ": "));
+
+
+            let elem = document.createElement("p");
+            elem.appendChild(userNameElem);
+            elem.appendChild(document.createTextNode(message));
+            let firstElem = document.getElementById("chatroom").firstChild;
+            document.getElementById("chatroom").insertBefore(elem, firstElem);
+        });
+
+        document.getElementById("loginBtn").addEventListener("click", function (e) {
+            userName = document.getElementById("userName").value;
+            document.getElementById("header").innerHTML = "<h3>Добро пожаловать" +
+                userName + "<h3>";
+        })
+
+        document.getElementById("sendBtn").addEventListener("click", function (e) {
+            let message = document.getElementById("message").value;
+            hubConnection.invoke("Send", message, userName);
+        })
+
+        hubConnection.start();
+
+    </script>
+</body>
+</html>
